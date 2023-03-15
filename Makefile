@@ -13,5 +13,5 @@ vet: fmt
 .PHONY:vet
 
 build: vet
-		go build -o mygrep main.go
+		go build -o mygrep .
 .PHONY:build
