@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
+	"regexp"
 )
 
 func findSearchWord(filepath string, searchWord string, isCaseSensitive bool) {
@@ -18,19 +18,15 @@ func findSearchWord(filepath string, searchWord string, isCaseSensitive bool) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	if !isCaseSensitive {
-		searchWord = strings.ToLower(searchWord)
+		// (?i) at the beginning of the pattern to make it case
+		//insensitive in regex.
+		searchWord = "(?i)" + searchWord
 	}
+	re := regexp.MustCompile(searchWord)
 
-	var search_line string
 	for scanner.Scan() {
 		line := scanner.Text()
-		if !isCaseSensitive {
-			search_line = strings.ToLower(line)
-		} else {
-			search_line = line
-		}
-		// Check for case sensivity here
-		if strings.Contains(search_line, searchWord) {
+		if re.MatchString(line) {
 			fmt.Println(filepath, line)
 		}
 	}
