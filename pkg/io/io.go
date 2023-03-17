@@ -10,25 +10,23 @@ import (
 func CheckFileExists(filepath string) (bool, error) {
 	_, err := os.Stat(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	if errors.Is(err, os.ErrNotExist) {
 		return false, nil
-	} else {
-		return true, nil
 	}
+	return true, nil
 }
 
 func IsDirectory(filepath string) (bool, error) {
 	fileInfo, err := os.Stat(filepath)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	if fileInfo.IsDir() {
 		return true, nil
-	} else {
-		return false, nil
 	}
+	return false, nil
 }
 
 func WriteToFile(outputFile string, result []string) {

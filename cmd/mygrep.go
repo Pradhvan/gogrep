@@ -5,14 +5,24 @@ import (
 	"log"
 	"regexp"
 
-	"github.com/Pradhvan/gogrep/io"
+	"github.com/Pradhvan/gogrep/pkg/io"
 )
 
 func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool) (matchFound []string, err error) {
-	// Add a check to if we have read permission of a file.
-	//fmt.Println(fileInfo.Mode().Perm())
-	io.CheckFileExists(filepath)
-	io.IsDirectory(filepath)
+	exsits, err := io.CheckFileExists(filepath)
+	if !exsits {
+		log.Fatalf("Error: %s does not exsists.", filepath)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	isDir, err := io.IsDirectory(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if isDir {
+		log.Fatal("Error: Current file is a directory.")
+	}
 	fileContent, err := io.ReadFile(filepath)
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +33,7 @@ func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool) (m
 		searchWord = "(?i)" + searchWord
 	}
 	re := regexp.MustCompile(searchWord)
-	var matchText []string
+	var matchText = []string{}
 	var match string
 	for _, line := range fileContent {
 		if re.MatchString(line) {
