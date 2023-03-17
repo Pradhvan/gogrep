@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Pradhvan/gogrep/cmd"
 	"github.com/Pradhvan/gogrep/pkg/io"
@@ -27,13 +29,17 @@ func main() {
 	}
 
 	if outputFile != "" {
+		fmt.Println(outputFile)
 		outFileExists, err := io.CheckFileExists(outputFile)
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		if outFileExists {
 			log.Fatalf("Error: %s already exists in the current directory.", outputFile)
+		}
+
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				log.Fatal(err)
+			}
 		}
 	}
 	result, _ := cmd.FindSearchWord(fileToSearch, searchWord, isCaseSensitive)
