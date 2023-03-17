@@ -20,6 +20,12 @@ func main() {
 	searchWord := flag.Arg(0)
 	fileToSearch := flag.Arg(1)
 
+	if len(searchWord) == 0 || len(fileToSearch) == 0 {
+		fmt.Printf("Usage of our Program: \n")
+		fmt.Printf("$ ./mygrep searchword filename.txt")
+		return
+	}
+
 	if outputFile != "" {
 		outFileExists, err := io.CheckFileExists(outputFile)
 		if err != nil {
