@@ -5,10 +5,11 @@ import (
 	"log"
 	"regexp"
 
+	"github.com/Pradhvan/gogrep/pkg/ds"
 	"github.com/Pradhvan/gogrep/pkg/io"
 )
 
-func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool) (matchFound []string, err error) {
+func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool, countBefore int) (matchFound []string, err error) {
 	exsits, err := io.CheckFileExists(filepath)
 	if !exsits {
 		log.Fatalf("Error: %s does not exsists.", filepath)
@@ -35,11 +36,33 @@ func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool) (m
 	re := regexp.MustCompile(searchWord)
 	var matchText = []string{}
 	var match string
-	for _, line := range fileContent {
-		if re.MatchString(line) {
-			match = fmt.Sprintf("%s: %s", filepath, line)
-			matchText = append(matchText, match)
+	var beforeStorage = ds.Queue{}
+	if countBefore == 0 {
+		for _, line := range fileContent {
+			if re.MatchString(line) {
+				match = fmt.Sprintf("%s: %s", filepath, line)
+				matchText = append(matchText, match)
+			}
+		}
+	} else {
+		for _, line := range fileContent {
+			if re.MatchString(line) {
+				if len(beforeStorage.GetAll()) > 0 {
+					matchText = append(matchText, beforeStorage.GetAll()...)
+					beforeStorage.Clear()
+				}
+				match = fmt.Sprintf("%s: %s", filepath, line)
+				matchText = append(matchText, match)
+			} else {
+				if len(beforeStorage.GetAll()) < countBefore {
+					beforeStorage.Enqueue(line)
+				} else {
+					beforeStorage.Dequeue()
+					beforeStorage.Enqueue(line)
+				}
+			}
 		}
 	}
+
 	return matchText, nil
 }

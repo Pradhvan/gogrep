@@ -15,10 +15,12 @@ func main() {
 	var outputFile string
 	var isCaseSensitive bool
 	var countSearchResult bool
+	var countBefore int
 
 	flag.BoolVar(&isCaseSensitive, "i", false, "Make the seach case sensitive.")
 	flag.BoolVar(&countSearchResult, "c", false, "Count number of matches.")
 	flag.StringVar(&outputFile, "o", "", "Filename to store the search results.")
+	flag.IntVar(&countBefore, "B", 0, "Print 'n' lines before the match")
 
 	flag.Parse()
 	searchWord := flag.Arg(0)
@@ -44,7 +46,7 @@ func main() {
 			}
 		}
 	}
-	result, _ := cmd.FindSearchWord(fileToSearch, searchWord, isCaseSensitive)
+	result, _ := cmd.FindSearchWord(fileToSearch, searchWord, isCaseSensitive, countBefore)
 	if outputFile == "" && !countSearchResult {
 		for _, line := range result {
 			fmt.Println(line)
