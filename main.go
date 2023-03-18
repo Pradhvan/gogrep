@@ -14,8 +14,10 @@ import (
 func main() {
 	var outputFile string
 	var isCaseSensitive bool
+	var countSearchResult bool
 
 	flag.BoolVar(&isCaseSensitive, "i", false, "Make the seach case sensitive.")
+	flag.BoolVar(&countSearchResult, "c", false, "Count number of matches.")
 	flag.StringVar(&outputFile, "o", "", "Filename to store the search results.")
 
 	flag.Parse()
@@ -43,11 +45,15 @@ func main() {
 		}
 	}
 	result, _ := cmd.FindSearchWord(fileToSearch, searchWord, isCaseSensitive)
-	if outputFile == "" {
+	if outputFile == "" && !countSearchResult {
 		for _, line := range result {
 			fmt.Println(line)
 		}
-	} else {
+	}
+	if outputFile != "" {
 		io.WriteToFile(outputFile, result)
+	}
+	if countSearchResult {
+		fmt.Printf("Total matches found for '%s' in %s: %d \n", searchWord, fileToSearch, len(result))
 	}
 }
