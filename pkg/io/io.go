@@ -3,8 +3,10 @@ package io
 import (
 	"bufio"
 	"errors"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func CheckFileExists(filepath string) (bool, error) {
@@ -47,7 +49,7 @@ func ReadFile(filePath string) ([]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		if os.IsPermission(err) {
-			log.Println("Error: Read permission denied.")
+			log.Fatalf("Error: Read permission denied for %s", filePath)
 		} else {
 			log.Fatal(err)
 		}
@@ -60,4 +62,20 @@ func ReadFile(filePath string) ([]string, error) {
 		fileContent = append(fileContent, scanner.Text())
 	}
 	return fileContent, scanner.Err()
+}
+
+func ListFilesInDir(root string) ([]string, error) {
+	filePaths := []string{}
+	// filepath.Walk is less efficient than WalkDir, introduced in Go 1.16,
+	//which avoids calling os.Lstat on every visited file or directory.
+	err := filepath.WalkDir(root, func(path string, fi fs.DirEntry, err error) error {
+		if !fi.IsDir() {
+			filePaths = append(filePaths, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return filePaths, nil
 }
