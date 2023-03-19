@@ -30,7 +30,7 @@ func main() {
 	}
 
 	searchWord := conf.args[0]
-	fileToSearch := conf.args[0]
+	fileToSearch := conf.args[1]
 	var searchList = []string{}
 
 	directory, err := io.IsDirectory(fileToSearch)
