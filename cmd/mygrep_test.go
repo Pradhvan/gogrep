@@ -48,6 +48,33 @@ func TestFindSearchWord(t *testing.T) {
 			output:          []string{"testdata/data.txt: FOO"},
 			countBefore:     0,
 		},
+		{
+			name:            "Test for `-B` count before flag with one match",
+			path:            "testdata/data.txt",
+			searchWord:      "Another",
+			isCaseSensitive: true,
+			output:          []string{"testdata/data.txt: this is a text here.", "testdata/data.txt: Another text goes here."},
+			countBefore:     1,
+		},
+		{
+			name:            "Test for `-B` count before flag with multtiple matchs",
+			path:            "testdata/data.txt",
+			searchWord:      "program",
+			isCaseSensitive: false,
+			output: []string{
+				"testdata/data.txt: An Idomatic Approach to",
+				"testdata/data.txt: Real-World Go Programming",
+				"testdata/data.txt: ",
+				"testdata/data.txt: Welcome to a tour of the Go programming language.",
+				"testdata/data.txt: next or PageDown to go to the next page.",
+				"testdata/data.txt: The tour is interactive. Click the Run button now (or press Shift + Enter) to compile and run the program on a remote server. The result is displayed below the code.",
+				"testdata/data.txt: ",
+				"testdata/data.txt: These example programs demonstrate different aspects of Go. The programs in the tour are meant to be starting points for your own experimentation.",
+				"testdata/data.txt: ",
+				"testdata/data.txt: Edit the program and run it again.",
+			},
+			countBefore: 1,
+		},
 	}
 
 	for _, test := range tests {

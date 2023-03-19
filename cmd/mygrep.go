@@ -54,11 +54,12 @@ func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool, co
 				match = fmt.Sprintf("%s: %s", filepath, line)
 				matchText = append(matchText, match)
 			} else {
+
 				if len(beforeStorage.GetAll()) < countBefore {
-					beforeStorage.Enqueue(line)
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
 				} else {
 					beforeStorage.Dequeue()
-					beforeStorage.Enqueue(line)
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
 				}
 			}
 		}
