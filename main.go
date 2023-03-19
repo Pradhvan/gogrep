@@ -25,11 +25,24 @@ func main() {
 	flag.Parse()
 	searchWord := flag.Arg(0)
 	fileToSearch := flag.Arg(1)
+	var searchList = []string{}
 
 	if len(searchWord) == 0 || len(fileToSearch) == 0 {
 		fmt.Printf("Usage of our Program: \n")
 		fmt.Printf("$ ./mygrep searchword filename.txt")
 		return
+	}
+	directory, err := io.IsDirectory(fileToSearch)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if directory {
+		searchList, err = io.ListFilesInDir(fileToSearch)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		searchList = append(searchList, fileToSearch)
 	}
 
 	if outputFile != "" {
@@ -46,7 +59,13 @@ func main() {
 			}
 		}
 	}
-	result, _ := cmd.FindSearchWord(fileToSearch, searchWord, isCaseSensitive, countBefore)
+
+	var result = []string{}
+	for _, file := range searchList {
+		matchFound, _ := cmd.FindSearchWord(file, searchWord, isCaseSensitive, countBefore)
+		result = append(result, matchFound...)
+	}
+
 	if outputFile == "" && !countSearchResult {
 		for _, line := range result {
 			fmt.Println(line)
