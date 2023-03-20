@@ -85,5 +85,5 @@ words.txt:Real-World Go Programming
 * Using multiples flags
 ```
 $ ./mygrep -B 1 -o output.txt -i -c go word.txt
-Total matches found for 'go' in words.txt: 2
+Total matches found for 'go' in word.txt: 2
 ```
