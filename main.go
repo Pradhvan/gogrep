@@ -1,14 +1,12 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 
 	"github.com/Pradhvan/gogrep/cmd"
-	"github.com/Pradhvan/gogrep/pkg/io"
 	"github.com/Pradhvan/gogrep/pkg/parseflag"
 )
 
@@ -23,51 +21,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	searchWord := conf.Args[0]
-	fileToSearch := conf.Args[1]
-	var searchList = []string{}
-
-	directory, err := io.IsDirectory(fileToSearch)
+	match, err := cmd.FindSearchWord(*conf)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if directory {
-		searchList, err = io.ListFilesInDir(fileToSearch)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		searchList = append(searchList, fileToSearch)
-	}
-	if conf.OutputFile != "" {
-		outFileExists, err := io.CheckFileExists(conf.OutputFile)
 
-		if outFileExists {
-			log.Fatalf("Error: %s already exists in the current directory.", conf.OutputFile)
-		}
-
-		if err != nil {
-			if !errors.Is(err, os.ErrNotExist) {
-				log.Fatal(err)
-			}
-		}
+	if match.ShowCount {
+		fmt.Printf("Total matches found for '%s' in %s: %d \n", conf.Args[0], conf.Args[1], match.Count)
+		return
 	}
 
-	var result = []string{}
-	for _, file := range searchList {
-		matchFound, _ := cmd.FindSearchWord(file, searchWord, conf.IsCaseSensitive, conf.CountBefore)
-		result = append(result, matchFound...)
-	}
-
-	if conf.OutputFile == "" && !conf.CountSearchResult {
-		for _, line := range result {
+	if !match.MatchFileWrote {
+		for _, line := range match.MatchText {
 			fmt.Println(line)
 		}
-	}
-	if conf.OutputFile != "" {
-		io.WriteToFile(conf.OutputFile, result)
-	}
-	if conf.CountSearchResult {
-		fmt.Printf("Total matches found for '%s' in %s: %d \n", searchWord, fileToSearch, len(result))
 	}
 }

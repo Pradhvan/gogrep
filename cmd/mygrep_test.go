@@ -4,63 +4,73 @@ import (
 	"testing"
 
 	"github.com/Pradhvan/gogrep/cmd"
+	"github.com/Pradhvan/gogrep/pkg/parseflag"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFindSearchWord(t *testing.T) {
 	tests := []struct {
-		name            string
-		path            string
-		searchWord      string
-		isCaseSensitive bool
-		output          []string
-		countBefore     int
+		name   string
+		output []string
+		config parseflag.Config
 	}{
 		{
-			name:            "Test for search present in the file.",
-			path:            "testdata/data.txt",
-			searchWord:      "Jhon",
-			isCaseSensitive: false,
-			output:          []string{"testdata/data.txt: Jhon Bodner's Go Book"},
-			countBefore:     0,
+			name:   "Test for search present in the file.",
+			output: []string{"testdata/data.txt: Jhon Bodner's Go Book"},
+			config: parseflag.Config{
+				OutputFile:        "",
+				IsCaseSensitive:   false,
+				CountSearchResult: false,
+				CountBefore:       0,
+				Args:              []string{"Jhon", "testdata/data.txt"},
+			},
 		},
 		{
-			name:            "Test for no search word present in the file.",
-			path:            "testdata/data.txt",
-			searchWord:      "Python",
-			isCaseSensitive: false,
-			output:          []string{},
-			countBefore:     0,
+			name:   "Test for no search word present in the file.",
+			output: []string{},
+			config: parseflag.Config{
+				IsCaseSensitive:   false,
+				CountBefore:       0,
+				OutputFile:        "",
+				CountSearchResult: false,
+				Args:              []string{"Python", "testdata/data.txt"},
+			},
 		},
 		{
-			name:            "Test for multiple search present in the file.",
-			path:            "testdata/data.txt",
-			searchWord:      "foo",
-			isCaseSensitive: false,
-			output:          []string{"testdata/data.txt: foobar", "testdata/data.txt: FOO"},
-			countBefore:     0,
+			name:   "Test for multiple search present in the file.",
+			output: []string{"testdata/data.txt: foobar", "testdata/data.txt: FOO"},
+			config: parseflag.Config{
+				IsCaseSensitive:   false,
+				CountBefore:       0,
+				OutputFile:        "",
+				CountSearchResult: false,
+				Args:              []string{"foo", "testdata/data.txt"},
+			},
 		},
 		{
-			name:            "Test for casesensitive search.",
-			path:            "testdata/data.txt",
-			searchWord:      "FOO",
-			isCaseSensitive: true,
-			output:          []string{"testdata/data.txt: FOO"},
-			countBefore:     0,
+			name:   "Test for casesensitive search.",
+			output: []string{"testdata/data.txt: FOO"},
+			config: parseflag.Config{
+				IsCaseSensitive:   true,
+				CountBefore:       0,
+				OutputFile:        "",
+				CountSearchResult: false,
+				Args:              []string{"FOO", "testdata/data.txt"},
+			},
 		},
 		{
-			name:            "Test for `-B` count before flag with one match",
-			path:            "testdata/data.txt",
-			searchWord:      "Another",
-			isCaseSensitive: true,
-			output:          []string{"testdata/data.txt: this is a text here.", "testdata/data.txt: Another text goes here."},
-			countBefore:     1,
+			name:   "Test for `-B` count before flag with one match",
+			output: []string{"testdata/data.txt: this is a text here.", "testdata/data.txt: Another text goes here."},
+			config: parseflag.Config{
+				IsCaseSensitive:   true,
+				CountBefore:       1,
+				CountSearchResult: false,
+				OutputFile:        "",
+				Args:              []string{"Another", "testdata/data.txt"},
+			},
 		},
 		{
-			name:            "Test for `-B` count before flag with multtiple matchs",
-			path:            "testdata/data.txt",
-			searchWord:      "program",
-			isCaseSensitive: false,
+			name: "Test for `-B` count before flag with multtiple matchs",
 			output: []string{
 				"testdata/data.txt: An Idomatic Approach to",
 				"testdata/data.txt: Real-World Go Programming",
@@ -73,15 +83,20 @@ func TestFindSearchWord(t *testing.T) {
 				"testdata/data.txt: ",
 				"testdata/data.txt: Edit the program and run it again.",
 			},
-			countBefore: 1,
+			config: parseflag.Config{
+				IsCaseSensitive:   false,
+				CountBefore:       1,
+				CountSearchResult: false,
+				OutputFile:        "",
+				Args:              []string{"program", "testdata/data.txt"},
+			},
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got, _ := cmd.FindSearchWord(test.path, test.searchWord, test.isCaseSensitive, test.countBefore)
-			assert.Equal(t, test.output, got)
-
+			r, _ := cmd.FindSearchWord(test.config)
+			assert.Equal(t, test.output, r.MatchText)
 		})
 	}
 

@@ -2,15 +2,28 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 
 	"github.com/Pradhvan/gogrep/pkg/ds"
 	"github.com/Pradhvan/gogrep/pkg/io"
+	"github.com/Pradhvan/gogrep/pkg/parseflag"
 )
 
-func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool, countBefore int) (matchFound []string, err error) {
+type Result struct {
+	MatchText      []string
+	Count          int
+	ShowCount      bool
+	MatchFileWrote bool
+}
+
+func FindSearchWord(config parseflag.Config) (result *Result, err error) {
+	var matchStore Result
+	searchWord := config.Args[0]
+	filepath := config.Args[1]
 
 	exsits, err := io.CheckFileExists(filepath)
 	if !exsits {
@@ -19,58 +32,92 @@ func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool, co
 		return nil, err
 	}
 
+	var searchList = []string{}
 	isDir, err := io.IsDirectory(filepath)
-	if isDir {
-		return nil, fmt.Errorf("current file is a directory ")
-	} else if err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	if !isCaseSensitive {
+	if isDir {
+		searchList, err = io.ListFilesInDir(filepath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		searchList = append(searchList, filepath)
+	}
+
+	if !config.IsCaseSensitive {
 		// (?i) at the beginning of the pattern to make it case
 		//insensitive in regex.
 		searchWord = "(?i)" + searchWord
 	}
 	re := regexp.MustCompile(searchWord)
 
-	file, err := os.Open(filepath)
-	if err != nil {
-		if os.IsPermission(err) {
-			return nil, fmt.Errorf("read permission denied for %s", filepath)
-		}
-		return nil, err
-	}
-	defer file.Close()
-
 	var matchText = []string{}
 	var beforeStorage = ds.Queue{}
 
 	var shouldCountBefore = false
-	if countBefore != 0 {
+	if config.CountBefore != 0 {
 		shouldCountBefore = true
 	}
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if re.MatchString(line) {
-			if len(beforeStorage.GetAll()) > 0 && shouldCountBefore {
-				matchText = append(matchText, beforeStorage.GetAll()...)
-				beforeStorage.Clear()
+	for _, searchfile := range searchList {
+		file, err := os.Open(searchfile)
+		if err != nil {
+			if os.IsPermission(err) {
+				return nil, fmt.Errorf("read permission denied for %s", filepath)
 			}
-			matchText = append(matchText, fmt.Sprintf("%s: %s", filepath, line))
-		} else if shouldCountBefore {
+			return nil, err
+		}
+		defer file.Close()
 
-			if len(beforeStorage.GetAll()) < countBefore {
-				beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
-			} else {
-				beforeStorage.Dequeue()
-				beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanLines)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if re.MatchString(line) {
+				if len(beforeStorage.GetAll()) > 0 && shouldCountBefore {
+					matchText = append(matchText, beforeStorage.GetAll()...)
+					beforeStorage.Clear()
+				}
+				matchText = append(matchText, fmt.Sprintf("%s: %s", filepath, line))
+			} else if shouldCountBefore {
+
+				if len(beforeStorage.GetAll()) < config.CountBefore {
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
+				} else {
+					beforeStorage.Dequeue()
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
+				}
 			}
 		}
+		beforeStorage.Clear()
+	}
+	matchStore.MatchText = matchText
+
+	if config.OutputFile != "" {
+		outFileExists, err := io.CheckFileExists(config.OutputFile)
+
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				log.Fatal(err)
+			}
+		}
+
+		if outFileExists {
+			return nil, fmt.Errorf("error: %s already exists in the current directory", config.OutputFile)
+		}
+
+		io.WriteToFile(config.OutputFile, matchText)
+		matchStore.MatchFileWrote = true
 	}
 
-	return matchText, nil
+	if config.CountSearchResult {
+		matchStore.Count = len(matchText)
+		matchStore.ShowCount = true
+	}
+
+	return &matchStore, nil
 }
