@@ -77,12 +77,27 @@ func TestParseFlagsCorrect(t *testing.T) {
 	for _, test := range tests {
 		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
 			conf, output, err := parseFlags("prog", test.args)
-			if err != nil {
-				t.Errorf("err got %v, want nil", err)
-			}
+			assert.Nil(t, err)
 			assert.Equal(t, output, "")
-
 			assert.Equal(t, test.conf, *conf)
+		})
+	}
+}
+
+func TestParseFlagsError(t *testing.T) {
+	var tests = []struct {
+		args   []string
+		errstr string
+	}{
+		{[]string{"-l"}, "flag provided but not defined"},
+		{[]string{"-B", "test"}, "invalid value"},
+	}
+
+	for _, tt := range tests {
+		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
+			conf, _, err := parseFlags("prog", tt.args)
+			assert.Nil(t, conf)
+			assert.Contains(t, err.Error(), tt.errstr)
 		})
 	}
 }
