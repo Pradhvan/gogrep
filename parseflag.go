@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 )
 
 type Config struct {
@@ -16,6 +17,11 @@ type Config struct {
 }
 
 func parseFlags(searchWord string, args []string) (config *Config, output string, err error) {
+
+	if len(args) < 2 {
+		return nil, "", fmt.Errorf("not enough arguments passed, args: %q", args)
+	}
+
 	flags := flag.NewFlagSet(searchWord, flag.ContinueOnError)
 	var buf bytes.Buffer
 	flags.SetOutput(&buf)
@@ -30,6 +36,10 @@ func parseFlags(searchWord string, args []string) (config *Config, output string
 	if err != nil {
 		return nil, buf.String(), err
 	}
+	if len(flags.Args()) == 0 {
+		return nil, "", fmt.Errorf("missing argument searchword and filename")
+	}
+
 	conf.args = flags.Args()
 	return &conf, buf.String(), nil
 }

@@ -89,8 +89,11 @@ func TestParseFlagsError(t *testing.T) {
 		args   []string
 		errstr string
 	}{
-		{[]string{"-l"}, "flag provided but not defined"},
+		{[]string{"-l", "test", "words.txt"}, "flag provided but not defined"},
 		{[]string{"-B", "test"}, "invalid value"},
+		{[]string{""}, "not enough arguments passed"},
+		{[]string{"-i", "-c"}, "missing argument searchword and filename"},
+		{[]string{"foobar"}, "not enough arguments passed"},
 	}
 
 	for _, tt := range tests {

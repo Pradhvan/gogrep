@@ -12,14 +12,6 @@ import (
 )
 
 func main() {
-	//os.Args[0] would be ./mygrep
-	// so if not value is passed show usage
-	if len(os.Args) < 3 {
-		fmt.Printf("Usage: \n")
-		fmt.Printf("$ ./mygrep -flag[Optional Value] searchword filename.txt \n")
-		os.Exit(1)
-	}
-
 	conf, output, err := parseFlags(os.Args[0], os.Args[1:])
 
 	if err == flag.ErrHelp {
@@ -27,10 +19,6 @@ func main() {
 		os.Exit(1)
 	} else if err != nil {
 		fmt.Println("Error: \n", err)
-		os.Exit(1)
-	} else if len(conf.args) == 0 {
-		fmt.Printf("Usage: \n")
-		fmt.Printf("$ ./mygrep -flag[Optional Value] searchword filename.txt \n")
 		os.Exit(1)
 	}
 
