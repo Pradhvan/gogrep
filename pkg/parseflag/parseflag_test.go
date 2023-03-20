@@ -9,12 +9,14 @@ import (
 
 func TestParseFlagsCorrect(t *testing.T) {
 	var tests = []struct {
+		name string
 		args []string
 		conf Config
 	}{
 		{
-			[]string{"foo", "words.txt"},
-			Config{
+			name: "Test when only searchword and filename is passed.",
+			args: []string{"foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "",
 				IsCaseSensitive:   false,
 				CountSearchResult: false,
@@ -23,8 +25,9 @@ func TestParseFlagsCorrect(t *testing.T) {
 			},
 		},
 		{
-			[]string{"-o", "output.txt", "foo", "words.txt"},
-			Config{
+			name: "Test for output flag '-o'",
+			args: []string{"-o", "output.txt", "foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "output.txt",
 				IsCaseSensitive:   false,
 				CountSearchResult: false,
@@ -33,8 +36,9 @@ func TestParseFlagsCorrect(t *testing.T) {
 			},
 		},
 		{
-			[]string{"-i", "foo", "words.txt"},
-			Config{
+			name: "Test for flag '-i'",
+			args: []string{"-i", "foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "",
 				IsCaseSensitive:   true,
 				CountSearchResult: false,
@@ -43,8 +47,9 @@ func TestParseFlagsCorrect(t *testing.T) {
 			},
 		},
 		{
-			[]string{"-B", "10", "foo", "words.txt"},
-			Config{
+			name: "Test for flag '-B'",
+			args: []string{"-B", "10", "foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "",
 				IsCaseSensitive:   false,
 				CountSearchResult: false,
@@ -53,8 +58,9 @@ func TestParseFlagsCorrect(t *testing.T) {
 			},
 		},
 		{
-			[]string{"-c", "foo", "words.txt"},
-			Config{
+			name: "Test for flag '-c'",
+			args: []string{"-c", "foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "",
 				IsCaseSensitive:   false,
 				CountSearchResult: true,
@@ -63,8 +69,9 @@ func TestParseFlagsCorrect(t *testing.T) {
 			},
 		},
 		{
-			[]string{"-o", "output.txt", "-i", "-c", "-B", "3", "foo", "words.txt"},
-			Config{
+			name: "Test to check combined flag usage.",
+			args: []string{"-o", "output.txt", "-i", "-c", "-B", "3", "foo", "words.txt"},
+			conf: Config{
 				OutputFile:        "output.txt",
 				IsCaseSensitive:   true,
 				CountSearchResult: true,
@@ -86,21 +93,42 @@ func TestParseFlagsCorrect(t *testing.T) {
 
 func TestParseFlagsError(t *testing.T) {
 	var tests = []struct {
-		args   []string
-		errstr string
+		name     string
+		args     []string
+		errorstr string
 	}{
-		{[]string{"-l", "test", "words.txt"}, "flag provided but not defined"},
-		{[]string{"-B", "test"}, "invalid value"},
-		{[]string{""}, "not enough arguments passed"},
-		{[]string{"-i", "-c"}, "missing argument searchword and filename"},
-		{[]string{"foobar"}, "not enough arguments passed"},
+		{
+			name:     "Test to check error for invalid flag.",
+			args:     []string{"-l", "test", "words.txt"},
+			errorstr: "flag provided but not defined",
+		},
+		{
+			name:     "Test to check error for invalid input to a valid flag.",
+			args:     []string{"-B", "test"},
+			errorstr: "invalid value",
+		},
+		{
+			name:     "Test to check error on input.",
+			args:     []string{""},
+			errorstr: "not enough arguments passed",
+		},
+		{
+			name:     "Test to check error for missing argument searchword and filename.",
+			args:     []string{"-i", "-c"},
+			errorstr: "missing argument searchword and filename",
+		},
+		{
+			name:     "Test to check error for missing argument filename.",
+			args:     []string{"foobar"},
+			errorstr: "not enough arguments passed",
+		},
 	}
 
-	for _, tt := range tests {
-		t.Run(strings.Join(tt.args, " "), func(t *testing.T) {
-			conf, _, err := ParseFlags("prog", tt.args)
+	for _, test := range tests {
+		t.Run(strings.Join(test.args, " "), func(t *testing.T) {
+			conf, _, err := ParseFlags("prog", test.args)
 			assert.Nil(t, conf)
-			assert.Contains(t, err.Error(), tt.errstr)
+			assert.Contains(t, err.Error(), test.errorstr)
 		})
 	}
 }
