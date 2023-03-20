@@ -1,7 +1,6 @@
 package io
 
 import (
-	"bufio"
 	"errors"
 	"io/fs"
 	"log"
@@ -43,25 +42,6 @@ func WriteToFile(outputFile string, result []string) {
 			log.Fatal(err)
 		}
 	}
-}
-
-func ReadFile(filePath string) ([]string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		if os.IsPermission(err) {
-			log.Fatalf("Error: Read permission denied for %s", filePath)
-		} else {
-			log.Fatal(err)
-		}
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-	var fileContent []string
-	for scanner.Scan() {
-		fileContent = append(fileContent, scanner.Text())
-	}
-	return fileContent, scanner.Err()
 }
 
 func ListFilesInDir(root string) ([]string, error) {
