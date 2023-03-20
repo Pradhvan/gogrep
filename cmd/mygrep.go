@@ -45,18 +45,23 @@ func FindSearchWord(filepath string, searchWord string, isCaseSensitive bool, co
 	var matchText = []string{}
 	var beforeStorage = ds.Queue{}
 
+	var shouldCountBefore = false
+	if countBefore != 0 {
+		shouldCountBefore = true
+	}
+
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 		if re.MatchString(line) {
-			if len(beforeStorage.GetAll()) > 0 && countBefore != 0 {
+			if len(beforeStorage.GetAll()) > 0 && shouldCountBefore {
 				matchText = append(matchText, beforeStorage.GetAll()...)
 				beforeStorage.Clear()
 			}
 			matchText = append(matchText, fmt.Sprintf("%s: %s", filepath, line))
-		} else if countBefore != 0 {
+		} else if shouldCountBefore {
 
 			if len(beforeStorage.GetAll()) < countBefore {
 				beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
