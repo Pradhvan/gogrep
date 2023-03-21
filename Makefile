@@ -2,15 +2,15 @@
 BINARY_NAME=mygrep
 
 fmt:
-	go fmt 
+	gofmt -w -s .
 .PHONY:fmt
 
 lint: fmt
-		golint 
+		golint ./...
 .PHONY:lint
 
 vet: fmt 
-		go vet 
+		go vet ./...
 .PHONY:vet
 
 build: vet
