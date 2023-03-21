@@ -34,14 +34,18 @@ func WriteToFile(outputFile string, result []string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	// Deferring unsafe method "Close" on type "*os.File"
+	// Deferring a function call ignores its return value, and the Close() method
+	//can return errors. For writable files, we should avoid the defer idiom or very infrequent,
+	// maddening bugs will occur.
 	for _, line := range result {
 		_, err := file.WriteString(line + "\n")
 		if err != nil {
+			file.Close()
 			return err
 		}
 	}
-	return nil
+	return file.Close()
 }
 
 func ListFilesInDir(root string) ([]string, error) {
