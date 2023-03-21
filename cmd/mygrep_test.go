@@ -141,6 +141,22 @@ func TestFindSearchWord(t *testing.T) {
 				Args:              []string{"Another", "testdata/data.txt"},
 			},
 		},
+		{
+			name: "Test for searching when filepath is a directory.",
+			output: []string{
+				"testdata/inner/inner-inner/inner-inner.txt: food security card",
+				"testdata/inner/inner-inner/inner-inner.txt: Food security card",
+				"testdata/inner/inner.txt: football",
+				"testdata/inner/inner.txt: Football",
+			},
+			config: parseflag.Config{
+				IsCaseSensitive:   false,
+				CountBefore:       0,
+				CountSearchResult: false,
+				OutputFile:        "",
+				Args:              []string{"foo", "testdata/inner"},
+			},
+		},
 	}
 
 	for _, test := range tests {
