@@ -87,7 +87,10 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 				if len(beforeStorage.GetAll()) < config.CountBefore {
 					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
 				} else {
-					beforeStorage.Dequeue()
+					err := beforeStorage.Dequeue()
+					if err != nil {
+						return nil, err
+					}
 					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
 				}
 			}
