@@ -25,6 +25,22 @@ $ ./mygrep searchterm filetosearchin.txt
 * **-o**: Store the search results in a file.
 * **-B**: "Print *'n'* lines before the match"
 
+**Note:** 
+* All the flags passed to `mygrep` should be passed before the search word argument. To read more about why this happens check out [issue #9](https://github.com/Pradhvan/gogrep/issues/9)
+
+* This works 
+```
+./mygrep -i -o output.txt Go words.txt 
+```
+
+* This won't work
+```
+./mygrep -i Go words.txt -o output.tx 
+```
+
+## Project Design Decision
+
+If you wanna know a bit more about the project. Check out this [Project overview](https://github.com/Pradhvan/gogrep/wiki#project-overview).
 
 
 ## Usage
