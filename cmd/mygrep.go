@@ -65,7 +65,7 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 		file, err := os.Open(searchfile)
 		if err != nil {
 			if os.IsPermission(err) {
-				return nil, fmt.Errorf("read permission denied for %s", filepath)
+				return nil, fmt.Errorf("read permission denied for %s", searchfile)
 			}
 			return nil, err
 		}
@@ -81,17 +81,17 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 					matchText = append(matchText, beforeStorage.GetAll()...)
 					beforeStorage.Clear()
 				}
-				matchText = append(matchText, fmt.Sprintf("%s: %s", filepath, line))
+				matchText = append(matchText, fmt.Sprintf("%s: %s", searchfile, line))
 			} else if shouldCountBefore {
 
 				if len(beforeStorage.GetAll()) < config.CountBefore {
-					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", searchfile, line))
 				} else {
 					err := beforeStorage.Dequeue()
 					if err != nil {
 						return nil, err
 					}
-					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", filepath, line))
+					beforeStorage.Enqueue(fmt.Sprintf("%s: %s", searchfile, line))
 				}
 			}
 		}
