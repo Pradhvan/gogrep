@@ -3,7 +3,6 @@ package io
 import (
 	"errors"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -30,22 +29,23 @@ func IsDirectory(filepath string) (bool, error) {
 	return false, nil
 }
 
-func WriteToFile(outputFile string, result []string) {
+func WriteToFile(outputFile string, result []string) error {
 	file, err := os.Create(outputFile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer file.Close()
 	for _, line := range result {
 		_, err := file.WriteString(line + "\n")
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func ListFilesInDir(root string) ([]string, error) {
-	filePaths := []string{}
+	var filePaths []string
 	// filepath.Walk is less efficient than WalkDir, introduced in Go 1.16,
 	//which avoids calling os.Lstat on every visited file or directory.
 	err := filepath.WalkDir(root, func(path string, fi fs.DirEntry, err error) error {

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 
@@ -102,7 +101,7 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
-				log.Fatal(err)
+				return nil, err
 			}
 		}
 
@@ -110,7 +109,10 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 			return nil, fmt.Errorf("error: %s already exists in the current directory", config.OutputFile)
 		}
 
-		io.WriteToFile(config.OutputFile, matchText)
+		err = io.WriteToFile(config.OutputFile, matchText)
+		if err != nil {
+			return nil, err
+		}
 		matchStore.MatchFileWrote = true
 	}
 
