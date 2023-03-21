@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/Pradhvan/gogrep/cmd"
-	"github.com/Pradhvan/gogrep/pkg/io"
+	"github.com/Pradhvan/gogrep/pkg/iohandler"
 	"github.com/Pradhvan/gogrep/pkg/parseflag"
 	"github.com/stretchr/testify/assert"
 )
@@ -156,7 +156,7 @@ func TestFindSearchWord(t *testing.T) {
 			// and clean it up after the test is run.
 			if len(test.config.OutputFile) > 0 {
 				assert.Equal(t, true, r.MatchFileWrote)
-				outFileExists, err := io.CheckFileExists(test.config.OutputFile)
+				outFileExists, err := iohandler.CheckFileExists(test.config.OutputFile)
 				assert.Equal(t, nil, err)
 				assert.Equal(t, true, outFileExists)
 				if outFileExists {

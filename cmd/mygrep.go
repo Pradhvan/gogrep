@@ -8,7 +8,7 @@ import (
 	"regexp"
 
 	"github.com/Pradhvan/gogrep/pkg/ds"
-	"github.com/Pradhvan/gogrep/pkg/io"
+	"github.com/Pradhvan/gogrep/pkg/iohandler"
 	"github.com/Pradhvan/gogrep/pkg/parseflag"
 )
 
@@ -24,7 +24,7 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 	searchWord := config.Args[0]
 	filepath := config.Args[1]
 
-	exsits, err := io.CheckFileExists(filepath)
+	exsits, err := iohandler.CheckFileExists(filepath)
 	if !exsits {
 		return nil, fmt.Errorf("error: %s does not exsists", filepath)
 	} else if err != nil {
@@ -32,13 +32,13 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 	}
 
 	var searchList = []string{}
-	isDir, err := io.IsDirectory(filepath)
+	isDir, err := iohandler.IsDirectory(filepath)
 	if err != nil {
 		return nil, err
 	}
 
 	if isDir {
-		searchList, err = io.ListFilesInDir(filepath)
+		searchList, err = iohandler.ListFilesInDir(filepath)
 		if err != nil {
 			return nil, err
 		}
@@ -100,7 +100,7 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 	matchStore.MatchText = matchText
 
 	if config.OutputFile != "" {
-		outFileExists, err := io.CheckFileExists(config.OutputFile)
+		outFileExists, err := iohandler.CheckFileExists(config.OutputFile)
 
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
@@ -112,7 +112,7 @@ func FindSearchWord(config parseflag.Config) (result *Result, err error) {
 			return nil, fmt.Errorf("error: %s already exists in the current directory", config.OutputFile)
 		}
 
-		err = io.WriteToFile(config.OutputFile, matchText)
+		err = iohandler.WriteToFile(config.OutputFile, matchText)
 		if err != nil {
 			return nil, err
 		}
